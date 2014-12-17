@@ -14,10 +14,10 @@
 (def mocks (atom [{:uri            "/test1"
                    :query-params   {:a "1"}
                    :request-method :get
-                   :response       "matched test1"}
+                   :response       {:body "{\"a\": 5}" :status 201}}
                   {:uri            "/test2"
                    :request-method :post
-                   :response       "matched test2"}]))
+                   :response       {:body "matched test2"}}]))
 
 (defn matched? [r m]
   (->> m
@@ -30,11 +30,11 @@
 
 (defn mock [req]
   (if-let [m (find-mock req)]
-    {:status  200
-     :body    (:response m)
+    {:status  (or (get-in m [:response :status]) 200)
+     :body    (get-in m [:response :body])
      :headers {}}
     {:status  404
-     :body    (str "Mock " req)
+     :body    (v/request (str req))
      :headers {}}))
 
 (defhandler index
